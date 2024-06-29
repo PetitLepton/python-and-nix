@@ -1,9 +1,14 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, inputs, ... }:
+
 {
-  languages.python = {
-    package = pkgs.python311;
-    enable = true;
-  };
+  env.PYTHONNOUSERSITE="1";
+
+  packages = [ pkgs.git ];
+
+  languages.python.enable = true;
+  languages.python.version = "3.11";
+  # Fix issue with manylinuex, see https://github.com/cachix/nixpkgs-python/issues/44
+  languages.python.manylinux.enable = false;
 
   scripts.init.exec = ''
     python -m venv .venv/
@@ -16,6 +21,11 @@
   '';
 
   enterShell = ''
-    source .venv/bin/activate
+    if [ -d .venv ]; then
+      unset PYTHONPATH 
+      source .venv/bin/activate
+    else
+      init
+    fi;
   '';
 }
